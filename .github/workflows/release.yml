@@ -81,7 +81,13 @@ jobs:
 
       - name: Update Major Version Tag
         if: ${{ !inputs.dry-run }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          # Configure git to use the GitHub token
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
           # Get the latest tag created by semantic-release
           LATEST_TAG=$(git describe --tags --abbrev=0)
           echo "Latest tag: $LATEST_TAG"
@@ -93,11 +99,11 @@ jobs:
             
             # Delete the major version tag if it exists (locally and remotely)
             git tag -d "$MAJOR_VERSION" 2>/dev/null || true
-            git push origin ":refs/tags/$MAJOR_VERSION" 2>/dev/null || true
+            git push https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}.git ":refs/tags/$MAJOR_VERSION" 2>/dev/null || true
             
             # Create new major version tag pointing to the latest release
             git tag -a "$MAJOR_VERSION" -m "Update $MAJOR_VERSION to $LATEST_TAG"
-            git push origin "$MAJOR_VERSION"
+            git push https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}.git "$MAJOR_VERSION"
             
             echo "✅ Updated $MAJOR_VERSION to point to $LATEST_TAG"
           else
