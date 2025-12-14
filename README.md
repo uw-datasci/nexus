@@ -11,9 +11,9 @@ Reusable GitHub Actions workflows for the Data Science Club.
 
 ## Release Automation
 
-This repository uses **Semantic Release** with manual fallback options.
+This repository uses **automatic versioning** based on conventional commits with manual fallback options.
 
-### Primary: Automatic Semantic Release
+### Primary: Automatic Release
 
 **Workflow:** `.github/workflows/release.yml`
 
@@ -25,9 +25,10 @@ When you push to `main`, the workflow automatically:
 
 - Analyzes commit messages since the last release
 - Determines the version bump (major, minor, or patch)
-- Generates a changelog
+- Creates and pushes a version tag (e.g., `v1.2.3`)
+- Generates release notes from commits
 - Creates a GitHub release
-- Tags the commit
+- Updates the major version tag (e.g., `v1`) to point to the latest release
 
 #### Manual Mode (Workflow Dispatch)
 
@@ -36,11 +37,11 @@ For situations where you need manual control:
 1. Go to **Actions** → **Release** → **Run workflow**
 2. Choose options:
    - **Release type:**
-     - `auto` - Use commit messages (default)
+     - `auto` - Analyze commit messages (default)
      - `major` - Force major version bump (e.g., 1.0.0 → 2.0.0)
      - `minor` - Force minor version bump (e.g., 1.0.0 → 1.1.0)
      - `patch` - Force patch version bump (e.g., 1.0.0 → 1.0.1)
-   - **Dry run:** Preview the release without publishing
+   - **Dry run:** Preview the version and changelog without creating a release
 3. Click **Run workflow**
 
 **Use manual mode when:**
@@ -48,13 +49,13 @@ For situations where you need manual control:
 - You need to force a specific version bump regardless of commits
 - You want to preview what will be released (dry run)
 - Commit messages don't reflect the actual changes
-- You need to create a release without new commits
+- You need to create a release without waiting for new commits
 
 ### Fallback: Tag-Based Release
 
 **Workflow:** `.github/workflows/release-tag.yml`
 
-Creates releases when you push a version tag (bypasses semantic-release entirely).
+Creates releases when you push a version tag (bypasses automatic versioning entirely).
 
 **To use:**
 
@@ -70,9 +71,9 @@ git push origin v1.0.0-beta.1
 
 **Use tag-based when:**
 
-- Semantic release is not working
-- You need complete manual control
-- Creating hotfix releases
+- The automatic release workflow is not working
+- You need complete manual control over versioning
+- Creating hotfix releases on older versions
 
 ## Commit Message Format
 
@@ -152,6 +153,4 @@ git push origin v1.0.0
 
 ## Configuration
 
-The semantic release is configured via `.releaserc.json` in the repository root.
-
-📖 **For detailed release workflow guidance, see [RELEASE_GUIDE.md](RELEASE_GUIDE.md)**
+The release workflow uses [github-tag-action](https://github.com/mathieudutour/github-tag-action) to analyze conventional commits and determine version bumps automatically.

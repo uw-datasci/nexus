@@ -51,5 +51,3 @@ Adds a reusable workflow for building Docker images with multi-platform support.
 ---
 
 💡 **Tip:** Merging to `main` will automatically trigger a release if using `feat`, `fix`, `perf`, `docs`, or `refactor` commits.
-
-See [RELEASE_GUIDE.md](../RELEASE_GUIDE.md) for more information.
