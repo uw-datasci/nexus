@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
     inputs:
       release-type:
-        description: "Release type"
+        description: "Release type (auto uses commit messages, or force a specific bump)"
         required: true
         default: "auto"
         type: choice
@@ -16,6 +16,11 @@ on:
           - major
           - minor
           - patch
+      dry-run:
+        description: "Dry run (preview release without publishing)"
+        required: false
+        type: boolean
+        default: false
 
 jobs:
   release:
@@ -39,13 +44,25 @@ jobs:
           node-version: 20
 
       - name: Install dependencies
-        run: npm install -g semantic-release @semantic-release/git @semantic-release/changelog @semantic-release/github conventional-changelog-conventionalcommits
+        run: npm install -g semantic-release @semantic-release/git @semantic-release/changelog @semantic-release/github @semantic-release/exec conventional-changelog-conventionalcommits
 
-      - name: Create Release
+      - name: Create Release (Automatic)
+        if: github.event_name == 'push' || inputs.release-type == 'auto'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GIT_AUTHOR_NAME: github-actions[bot]
           GIT_AUTHOR_EMAIL: github-actions[bot]@users.noreply.github.com
           GIT_COMMITTER_NAME: github-actions[bot]
           GIT_COMMITTER_EMAIL: github-actions[bot]@users.noreply.github.com
-        run: npx semantic-release
+        run: npx semantic-release ${{ inputs.dry-run && '--dry-run' || '' }}
+
+      - name: Create Release (Manual Override)
+        if: github.event_name == 'workflow_dispatch' && inputs.release-type != 'auto'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GIT_AUTHOR_NAME: github-actions[bot]
+          GIT_AUTHOR_EMAIL: github-actions[bot]@users.noreply.github.com
+          GIT_COMMITTER_NAME: github-actions[bot]
+          GIT_COMMITTER_EMAIL: github-actions[bot]@users.noreply.github.com
+          RELEASE_TYPE: ${{ inputs.release-type }}
+        run: npx semantic-release ${{ inputs.dry-run && '--dry-run' || '' }} --branches main --force-release ${{ inputs.release-type }}

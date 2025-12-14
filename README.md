@@ -11,67 +11,50 @@ Reusable GitHub Actions workflows for the Data Science Club.
 
 ## Release Automation
 
-This repository includes three release automation workflows:
+This repository uses **Semantic Release** with manual fallback options.
 
-### 1. Automatic Semantic Release (Recommended)
+### Primary: Automatic Semantic Release
 
 **Workflow:** `.github/workflows/release.yml`
 
 Automatically creates releases based on commit messages following [Conventional Commits](https://www.conventionalcommits.org/).
 
-**Commit Format:**
+#### Automatic Mode (Push to main)
 
-```
-<type>(<scope>): <description>
+When you push to `main`, the workflow automatically:
 
-[optional body]
+- Analyzes commit messages since the last release
+- Determines the version bump (major, minor, or patch)
+- Generates a changelog
+- Creates a GitHub release
+- Tags the commit
 
-[optional footer]
-```
+#### Manual Mode (Workflow Dispatch)
 
-**Types:**
+For situations where you need manual control:
 
-- `feat:` - New feature (triggers minor release)
-- `fix:` - Bug fix (triggers patch release)
-- `perf:` - Performance improvement (triggers patch release)
-- `docs:` - Documentation changes (triggers patch release)
-- `refactor:` - Code refactoring (triggers patch release)
-- `BREAKING CHANGE:` - Breaking change (triggers major release)
+1. Go to **Actions** → **Release** → **Run workflow**
+2. Choose options:
+   - **Release type:**
+     - `auto` - Use commit messages (default)
+     - `major` - Force major version bump (e.g., 1.0.0 → 2.0.0)
+     - `minor` - Force minor version bump (e.g., 1.0.0 → 1.1.0)
+     - `patch` - Force patch version bump (e.g., 1.0.0 → 1.0.1)
+   - **Dry run:** Preview the release without publishing
+3. Click **Run workflow**
 
-**Example commits:**
+**Use manual mode when:**
 
-```bash
-feat: add new workflow for Docker builds
-fix: correct artifact path in build workflow
-feat!: redesign workflow input parameters
+- You need to force a specific version bump regardless of commits
+- You want to preview what will be released (dry run)
+- Commit messages don't reflect the actual changes
+- You need to create a release without new commits
 
-# Breaking change in footer
-feat: change deployment strategy
-
-BREAKING CHANGE: deployment now requires vercel-project-id
-```
-
-**Triggers automatically on push to `main`.**
-
-### 2. Manual Release
-
-**Workflow:** `.github/workflows/release-manual.yml`
-
-Create releases manually via GitHub UI.
-
-**To use:**
-
-1. Go to Actions → Manual Release
-2. Click "Run workflow"
-3. Enter version (e.g., `1.0.0`)
-4. Optionally add release notes
-5. Click "Run workflow"
-
-### 3. Tag-Based Release
+### Fallback: Tag-Based Release
 
 **Workflow:** `.github/workflows/release-tag.yml`
 
-Creates releases when you push a version tag.
+Creates releases when you push a version tag (bypasses semantic-release entirely).
 
 **To use:**
 
@@ -85,22 +68,82 @@ git tag v1.0.0-beta.1
 git push origin v1.0.0-beta.1
 ```
 
-## Quick Start for Releases
+**Use tag-based when:**
 
-### Using Semantic Release (Recommended)
+- Semantic release is not working
+- You need complete manual control
+- Creating hotfix releases
+
+## Commit Message Format
+
+Follow [Conventional Commits](https://www.conventionalcommits.org/) for automatic releases:
+
+```
+<type>(<scope>): <description>
+
+[optional body]
+
+[optional footer]
+```
+
+### Types
+
+- `feat:` - New feature (triggers **minor** release: 1.0.0 → 1.1.0)
+- `fix:` - Bug fix (triggers **patch** release: 1.0.0 → 1.0.1)
+- `perf:` - Performance improvement (triggers **patch** release)
+- `docs:` - Documentation changes (triggers **patch** release)
+- `refactor:` - Code refactoring (triggers **patch** release)
+- `chore:` - Maintenance (no release)
+- `test:` - Test changes (no release)
+- `ci:` - CI changes (no release)
+- `BREAKING CHANGE:` - Breaking change (triggers **major** release: 1.0.0 → 2.0.0)
+
+### Example Commits
+
+```bash
+# Minor release (new feature)
+feat: add new workflow for Docker builds
+
+# Patch release (bug fix)
+fix: correct artifact path in build workflow
+
+# Major release (breaking change - option 1)
+feat!: redesign workflow input parameters
+
+# Major release (breaking change - option 2)
+feat: change deployment strategy
+
+BREAKING CHANGE: deployment now requires vercel-project-id
+
+# No release
+chore: update dependencies
+test: add unit tests for workflows
+```
+
+## Quick Start
+
+### Automatic Release (Recommended)
 
 Just commit using conventional commit format and push to main:
 
 ```bash
 git commit -m "feat: add new deployment workflow"
 git push origin main
+# Automatically creates a release!
 ```
 
-### Using Manual Release
+### Manual Release Override
 
-Go to Actions → Manual Release → Run workflow
+If you need to force a specific version:
 
-### Using Tags
+1. Go to **Actions** → **Release**
+2. Click **Run workflow**
+3. Select `major`, `minor`, or `patch`
+4. Click **Run workflow**
+
+### Emergency Tag-Based Release
+
+If semantic-release isn't working:
 
 ```bash
 git tag v1.0.0
@@ -110,3 +153,5 @@ git push origin v1.0.0
 ## Configuration
 
 The semantic release is configured via `.releaserc.json` in the repository root.
+
+📖 **For detailed release workflow guidance, see [RELEASE_GUIDE.md](RELEASE_GUIDE.md)**
