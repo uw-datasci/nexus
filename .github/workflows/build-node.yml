@@ -89,9 +89,12 @@ jobs:
       - name: Build
         run: ${{ inputs.build-command }}
 
+      - name: Archive Build Output
+        run: tar -czf ${{ inputs.artifact-name }}.tgz ${{ inputs.artifact-path }}
+
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
           name: ${{ inputs.artifact-name }}
-          path: ${{ inputs.artifact-path }}
+          path: ${{ inputs.artifact-name }}.tgz
           retention-days: 1

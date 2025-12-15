@@ -12,7 +12,7 @@ on:
       artifact-name:
         required: false
         type: string
-        default: dist
+        default: build-output.tgz
         description: "Name of the build artifact to download"
     secrets:
       VERCEL_TOKEN:
@@ -48,7 +48,10 @@ jobs:
         uses: actions/download-artifact@v7
         with:
           name: ${{ inputs.artifact-name }}
-          path: .vercel/output
+          path: .
+
+      - name: Extract Artifact
+        run: tar -xzf ${{ inputs.artifact-name }}.tgz
 
       - name: Pull & Deploy
         env:
