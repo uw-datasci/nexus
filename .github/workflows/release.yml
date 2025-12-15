@@ -80,8 +80,9 @@ jobs:
 
       - name: Update Major Version Tag
         if: ${{ !inputs.dry-run }}
-        uses: richardsimko/update-tag@v1
+        uses: cssnr/update-version-tags-action@v2
         with:
-          tag_name: v${{ steps.tag_version.outputs.major }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          tag: ${{ steps.tag_version.outputs.new_tag }}
+          prefix: v
+          major: true
+          minor: false
