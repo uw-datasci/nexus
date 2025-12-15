@@ -1,4 +1,4 @@
-name: Node Build
+name: Build
 
 on:
   workflow_call:
@@ -9,24 +9,23 @@ on:
       pnpm-version:
         required: true
         type: string
-      working-directory:
-        required: false
-        type: string
-        default: "."
-        description: Folder to run commands in (useful for monorepos)
       build-command:
-        required: false
+        required: true
         type: string
-        default: pnpm build
+        description: Build command to execute (e.g., 'pnpm build' or 'vercel build --prod')
       artifact-name:
         required: false
         type: string
-        default: dist
-      path-name:
-        required: false
+        default: build-output
+      artifact-path:
+        required: true
         type: string
-        default: .next/
-        description: Path to the build output
+        description: Path to the build output (e.g., '.next/' or '.vercel/output')
+      build-to-vercel:
+        required: false
+        type: boolean
+        default: false
+        description: Whether to install Vercel CLI before building
       infisical-project-slug:
         required: true
         type: string
@@ -41,11 +40,20 @@ on:
         required: true
       INFISICAL_CLIENT_SECRET:
         required: true
+      VERCEL_TOKEN:
+        required: false
+      VERCEL_PROJECT_ID:
+        required: false
+      VERCEL_ORG_ID:
+        required: false
 
 jobs:
   build:
-    name: Build Node App
+    name: Build App
     runs-on: ubuntu-latest
+    env:
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v6
@@ -63,7 +71,10 @@ jobs:
 
       - name: Install Dependencies
         run: pnpm install --frozen-lockfile
-        working-directory: ${{ inputs.working-directory }}
+
+      - name: Install Vercel CLI
+        if: inputs.build-to-vercel
+        run: pnpm install -g vercel@latest
 
       - name: Pull Secrets from Infisical
         uses: infisical/secrets-action@v1.0.9
@@ -78,8 +89,8 @@ jobs:
         run: ${{ inputs.build-command }}
 
       - name: Upload Artifact
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v4
         with:
           name: ${{ inputs.artifact-name }}
-          path: ${{ inputs.working-directory }}/${{ inputs.path-name }}
+          path: ${{ inputs.artifact-path }}
           retention-days: 1
